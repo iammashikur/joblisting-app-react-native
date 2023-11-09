@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "JobPortal",
+    "name": "saptahik chakrir sangbad",
     "slug": "JobPortal",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -21,10 +21,16 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.iammashikur.JobPortal"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "68e8a81e-4218-4622-af71-755130892e30"
+      }
     }
   }
 }
