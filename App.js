@@ -23,9 +23,9 @@ const Tab = createBottomTabNavigator();
 function MyTabs() {
   return (
     <Tab.Navigator>
-      <Tab.Screen name="চাকরি অনুসন্ধান" component={Home} options={
+      <Tab.Screen name="Search Jobs" component={Home} options={
         {
-          tabBarLabel: 'চাকরি অনুসন্ধান',
+          tabBarLabel: 'Search Jobs',
 
           tabBarStyle: {
             backgroundColor: '#ffffff',
@@ -50,7 +50,7 @@ function MyTabs() {
               <MaterialCommunityIcons name="information-outline" color={'#000'} size={20} onPress={() => {
                 Alert.alert(
                   'About',
-                  'This app is developed by IT Factory',
+                  'This app is developed by IT Factory Bangladesh',
                   [
                     { text: 'Ok', onPress: () => console.log('OK Pressed') }
                   ],
@@ -65,10 +65,10 @@ function MyTabs() {
 
         }
       } />
-      <Tab.Screen name="চাকরির ক্যাটাগরি" component={Menu}
+      <Tab.Screen name="Job Category" component={Menu}
         options={
           {
-            tabBarLabel: 'চাকরির ক্যাটাগরি',
+            tabBarLabel: 'Job Category',
 
             tabBarStyle: {
               backgroundColor: '#ffffff',
@@ -108,7 +108,12 @@ export default function App() {
 
           <Stack.Screen name="Job" component={Job} />
           <Stack.Screen name="Category" component={Category} />
-          <Stack.Screen name="SearchResults" component={SearchResults} />
+          <Stack.Screen name="SearchResults" component={SearchResults}
+            // set title
+            options={{
+              title: 'Search Results',
+            }}
+          />
 
         </Stack.Navigator>
       </NavigationContainer>
@@ -239,17 +244,29 @@ const Home = ({ navigation }) => {
 
   const handleSearch = () => {
 
+    if (keyword == '') {
+      Alert.alert(
+        'Keyword is empty!',
+        'Please enter a keyword',
+        [
+          { text: 'Ok', onPress: () => console.log('OK Pressed') }
+        ],
+        { cancelable: false }
+      );
+      return;
+    }
+
     navigation.navigate('SearchResults', { keyword, selectedLocation, selectedCategory });
 
   };
 
   return (
-    <ImageBackground source={require('./assets/bg.jpg')} blurRadius={40} style={{ width: '100%', height: '100%' }}
+    <ImageBackground source={require('./assets/bg.jpg')} blurRadius={10} style={{ width: '100%', height: '100%' }}
       resizeMode="cover">
       <View style={styles.container}>
         <TextInput
           style={styles.input}
-          placeholder="কীওয়ার্ড লিখুন"
+          placeholder="What are you looking for?"
           value={keyword}
           onChangeText={(text) => setKeyword(text)}
         />
@@ -261,7 +278,7 @@ const Home = ({ navigation }) => {
             onValueChange={(itemValue) => setSelectedLocation(itemValue)}
           >
             {location.map((location) => (
-              <Picker.Item key={location.id} label={location.name} value={location} />
+              <Picker.Item key={location} label={location.name} value={location} />
             ))}
           </Picker>
         </View>
@@ -273,7 +290,11 @@ const Home = ({ navigation }) => {
             onValueChange={(itemValue) => setSelectedCategory(itemValue)}
           >
             {category.map((category) => (
-              <Picker.Item key={category.id + 200} label={category.name} value={category} />
+
+          
+              <Picker.Item key={category} label={category.name} value={category} />
+
+
             ))}
           </Picker>
         </View>
@@ -290,7 +311,7 @@ const Home = ({ navigation }) => {
           <Text style={{
             color: 'white', fontSize: 16, marginTop: 2,
           }}>
-            খুঁজুন
+            Search
           </Text>
 
         </TouchableOpacity>
@@ -315,24 +336,24 @@ const Category = ({ route, navigation }) => {
     fetchUsers(page);
   }, []);
 
-  const fetchUsers = () => {
+  const fetchUsers = async () => {
+
     const { ItemId } = route.params;
 
-    axios
-      .get(`https://saptahikchakrisongbad.com/api/category/${ItemId}/?page=${page}`)
-      .then(response => {
-        setUsers(users.concat(response.data.data));
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error(error); // Log the error
-        setLoading(false);
-      });
+    try {
+      const response = await axios.get(`https://saptahikchakrisongbad.com/api/category/${ItemId}?page=${page}`);
+      setUsers((prevJobs) => [...prevJobs, ...response.data.data]);
+      setPage(page + 1);
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
+    } finally {
+      setLoading(false);
+    }
+
   };
 
-  const fetchMoreUsers = () => {
-    setPage(page + 10);
-    fetchUsers();
+  const fetchMoreUsers = async () => {
+    await fetchUsers();
   };
 
   if (loading) {
@@ -469,13 +490,13 @@ const Job = (props) => {
             <View
               style={{
                 backgroundColor: '#ebebeb7d',
-                padding: 5,
+                padding: 4,
                 borderRadius: 5,
                 flexDirection: 'row',
                 alignItems: 'center',
               }}
             >
-              <FontAwesome name="clock-o" size={14} color="#72154b" marginLeft={4} />
+              <FontAwesome name="clock-o" size={12} color="#72154b" marginLeft={4} />
               <Text style={styles.date}> {moment(jobData.PostDate).format('MMMM Do, YYYY [at] h:mm A')}</Text>
             </View>
 
@@ -509,8 +530,8 @@ const Job = (props) => {
 
             <View style={{
               width: '100%',
-           
-           
+
+
               flexDirection: 'row',
               alignItems: 'center',
               marginBottom: 10,
@@ -522,19 +543,19 @@ const Job = (props) => {
 
               <Text style={{
                 color: '#555',
-               
+
                 fontSize: 14,
                 fontWeight: '300',
               }}>
                 <Text
-                style={{
-                  color: '#72154b',
-                fontSize: 14,
-                fontWeight: '700',
-                }}
-                
+                  style={{
+                    color: '#72154b',
+                    fontSize: 14,
+                    fontWeight: '700',
+                  }}
+
                 >চাকরির স্থান : </Text>
-                  {jobData.joblocation}</Text>
+                {jobData.joblocation}</Text>
             </View>
 
 
@@ -648,19 +669,16 @@ const Job = (props) => {
                 }}>{jobData.salary}</Text>
               </View>
             </View>
-
-
-
-
-
-
-
-
-
           </View>
 
           <RenderHtml
             contentWidth={300}
+            style={{
+              marginBottom: 10,
+              marginTop: 10,
+              paddingTop: 10,
+              paddingBottom: 10,
+            }}
             source={{
               html: `${jobData.PostDetails}`,
             }}
@@ -672,8 +690,8 @@ const Job = (props) => {
         <TouchableOpacity style={{
 
           padding: 15,
-          
-          
+
+
         }}
           onPress={() => {
 
@@ -687,7 +705,7 @@ const Job = (props) => {
 
           }}
         >
-          
+
           <View style={{
             width: '100%',
             height: 55,
@@ -697,14 +715,14 @@ const Job = (props) => {
             flexDirection: 'row',
             borderRadius: 10,
           }}>
-          
-          <FontAwesome name="hand-o-right" size={16} color="#ffffff" />
-          <Text style={{
-            color: '#ffffff',
-            fontSize: 16,
-            fontWeight: '700',
-            marginLeft: 5,
-          }}>আবেদন করুন</Text>
+
+            <FontAwesome name="hand-o-right" size={16} color="#ffffff" />
+            <Text style={{
+              color: '#ffffff',
+              fontSize: 16,
+              fontWeight: '700',
+              marginLeft: 5,
+            }}>আবেদন করুন</Text>
 
 
           </View>
@@ -736,6 +754,7 @@ const grid = StyleSheet.create({
 });
 
 function SearchResults({ route, navigation }) {
+
   const { keyword, selectedLocation, selectedCategory } = route.params;
 
   const [searchResults, setSearchResults] = useState([]);
@@ -743,6 +762,8 @@ function SearchResults({ route, navigation }) {
 
 
   const apiUrl = `https://saptahikchakrisongbad.com/api/search/?query=${keyword}&location=${selectedLocation.id}&category=${selectedCategory.id}`;
+  console.log(apiUrl);
+
 
   useEffect(() => {
     // Send an API request when the component mounts
@@ -756,6 +777,16 @@ function SearchResults({ route, navigation }) {
         setIsLoading(false);
       });
   }, []);
+
+  //if no results
+  if (searchResults.length == 0) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+        <FontAwesome name="search" size={40} color="#c7c7c7" />
+        <Text style={{ fontSize: 16, color: '#666', marginTop:20 }}>No results found..</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={{ flex: 1, backgroundColor: '#ececeb' }}>
